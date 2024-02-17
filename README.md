@@ -1,3 +1,3 @@
-# Edible-Vaccine-Dataflow-Management
+# Edible-Vaccine-Development-Database
 
-Framework for the flow of data between three entities involved in edible vaccine development. 
+Database system for three entities involved in edible vaccine development. 
