@@ -2,8 +2,8 @@
 SET GLOBAL local_infile = 1;
 
 /* ======================= CREATING DATABASE ======================== */
-CREATE DATABASE IF NOT EXISTS db1;
-USE db1;
+CREATE DATABASE IF NOT EXISTS wcic;
+USE wcic;
 
 /* ======================= CREATING TABLES ======================== */
 
@@ -37,9 +37,26 @@ CREATE TABLE IF NOT EXISTS glycerol_stocks (
     vector_insert VARCHAR(300),
     resistance VARCHAR(20),
     notes VARCHAR(300),
-    validation1 VARCHAR(500),
-    validation2 VARCHAR(500),
+    validation_binary VARCHAR(500),
+    validation_desc VARCHAR(500),
     PRIMARY KEY (stock_no)
+);
+
+-- View: progress_view
+DROP VIEW IF EXISTS progress_view;
+CREATE OR REPLACE VIEW progress_view AS
+SELECT vector, vector_insert, validation_binary, validation_desc
+FROM glycerol_stocks;
+
+-- Table: plasmid_val
+DROP TABLE IF EXISTS plasmid_val;
+CREATE TABLE IF NOT EXISTS plasmid_val (
+    stock_no INT REFERENCES glycerol_stocks(stock_no),
+    dep_date TIMESTAMP,
+    vector VARCHAR(40),
+    vector_insert VARCHAR(300),
+    validation_binary VARCHAR(500),
+    validation_desc VARCHAR(500)
 );
 
 -- Table: primers
@@ -54,8 +71,6 @@ CREATE TABLE IF NOT EXISTS primers (
     GC_content FLOAT,
     Tm FLOAT,
     notes VARCHAR(200),
-    validation1 VARCHAR(500),
-    validation2 VARCHAR(500),
     PRIMARY KEY (primer_no)
 );
 
@@ -106,3 +121,9 @@ AFTER INSERT ON glycerol_stocks
 FOR EACH ROW
 INSERT INTO user_creation_log (table_id, user_id, entry_id, dep_date)
 VALUES ('glycerol_stocks', NEW.user_id, NEW.stock_no, NEW.dep_date);
+
+CREATE TRIGGER after_glycerol_stocks_insert
+AFTER INSERT ON glycerol_stocks
+FOR EACH ROW
+INSERT INTO plasmid_val (stock_no, dep_date, vector, vector_insert)
+VALUES (NEW.stock_no, NEW.dep_date, NEW.vector, NEW.vector_insert);
